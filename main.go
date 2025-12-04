@@ -70,8 +70,26 @@ func capturePackets(handle *pcap.Handle) {
 
 		// Type 8 = Echo Request （来自别人的ping）
 		if icmp.TypeCode.Type() == 8 {
-			fmt.Printf("收到 ping 请求： 来自 %s\n", ipv4.SrcIP)
+			continue
 		}
+
+		// 获取时间戳
+		ts := packet.Metadata().Timestamp.Format("2006-01-02 15:04:05")
+
+		green := "\033[1;32m"
+		cyan := "\033[1;36m"
+		reset := "\033[0m"
+		fmt.Printf("\n%s[ICMP Echo Request]%s\n", green, reset)
+		fmt.Printf("%s时间：%s%s\n", cyan, ts, reset)
+		fmt.Printf("%s来源 IP：%s%s\n", cyan, ipv4.SrcIP, reset)
+		fmt.Printf("%s目标 IP：%s%s\n", cyan, ipv4.DstIP, reset)
+		fmt.Printf("%sTTL：%d%s\n", cyan, ipv4.TTL, reset)
+		fmt.Printf("%sID：%d%s\n", cyan, ipv4.Id, reset)
+		fmt.Printf("%s协议：ICMPv4%s\n", cyan, reset)
+		fmt.Printf("%sICMP 类型：%d (Echo Request)%s\n", cyan, icmp.TypeCode.Type(), reset)
+		fmt.Printf("%s序列号：%d%s\n", cyan, icmp.Seq, reset)
+		fmt.Printf("%sPayload 长度：%d 字节%s\n", cyan, len(icmp.Payload), reset)
+		fmt.Println("------------------------------------")
 	}
 }
 

@@ -28,6 +28,33 @@ func main() {
 	listener(device)
 }
 
+// 自动选择网卡
+// 参数 devices 网卡列表
+func autoSelectDevice(devices []pcap.Interface) string {
+	// 优先选择 en0
+	for _, d := range devices {
+		if d.Name == "en0" {
+			return d.Name
+		}
+	}
+
+	// eth0
+	for _, d := range devices {
+		if d.Name == "eth0" {
+			return d.Name
+		}
+	}
+
+	// ens3 / ens33
+	for _, d := range devices {
+		if d.Name == "ens3" || d.Name == "ens33" {
+			return d.Name
+		}
+	}
+
+	return devices[0].Name
+}
+
 // 监听
 // 参数 device 网卡名称
 func listener(device string) {
@@ -56,7 +83,7 @@ func capturePackets(handle *pcap.Handle) {
 
 		// 解析 IPv4 层
 		ipLayer := packet.Layer(layers.LayerTypeIPv4)
-		if ipLayer != nil {
+		if ipLayer == nil {
 			continue
 		}
 		ipv4 := ipLayer.(*layers.IPv4)
@@ -91,31 +118,4 @@ func capturePackets(handle *pcap.Handle) {
 		fmt.Printf("%sPayload 长度：%d 字节%s\n", cyan, len(icmp.Payload), reset)
 		fmt.Println("------------------------------------")
 	}
-}
-
-// 自动选择网卡
-// 参数 devices 网卡列表
-func autoSelectDevice(devices []pcap.Interface) string {
-	// 优先选择 en0
-	for _, d := range devices {
-		if d.Name == "en0" {
-			return d.Name
-		}
-	}
-
-	// eth0
-	for _, d := range devices {
-		if d.Name == "eth0" {
-			return d.Name
-		}
-	}
-
-	// ens3 / ens33
-	for _, d := range devices {
-		if d.Name == "ens3" || d.Name == "ens33" {
-			return d.Name
-		}
-	}
-
-	return devices[0].Name
 }

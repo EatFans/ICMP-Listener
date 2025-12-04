@@ -8,6 +8,10 @@ import (
 	"log"
 )
 
+var (
+	icmpType = 8
+)
+
 func main() {
 	// 获取所有网卡
 	devices, err := pcap.FindAllDevs()
@@ -108,12 +112,26 @@ func capturePackets(handle *pcap.Handle) {
 		reset := "\033[0m"
 		fmt.Printf("\n%s[ICMP Echo Request]%s\n", green, reset)
 		fmt.Printf("%s时间：%s%s\n", cyan, ts, reset)
-		fmt.Printf("%s来源 IP：%s%s\n", cyan, ipv4.SrcIP, reset)
-		fmt.Printf("%s目标 IP：%s%s\n", cyan, ipv4.DstIP, reset)
+		fmt.Printf("%s来源 → 目标：%s → %s%s\n", cyan, ipv4.SrcIP, ipv4.DstIP, reset)
 		fmt.Printf("%sTTL：%d%s\n", cyan, ipv4.TTL, reset)
 		fmt.Printf("%sID：%d%s\n", cyan, ipv4.Id, reset)
 		fmt.Printf("%s协议：ICMPv4%s\n", cyan, reset)
-		fmt.Printf("%sICMP 类型：%d (Echo Request)%s\n", cyan, icmp.TypeCode.Type(), reset)
+		// 判断类型打印说明
+		icmpType := icmp.TypeCode.Type()
+		typeName := ""
+		switch icmpType {
+		case 8:
+			typeName = "Echo Request"
+		case 0:
+			typeName = "Echo Reply"
+		case 3:
+			typeName = "Destination Unreachable"
+		case 11:
+			typeName = "Time Exceeded"
+		default:
+			typeName = "Other"
+		}
+		fmt.Printf("%sICMP 类型：%d (%s)%s\n", cyan, icmpType, typeName, reset)
 		fmt.Printf("%s序列号：%d%s\n", cyan, icmp.Seq, reset)
 		fmt.Printf("%sPayload 长度：%d 字节%s\n", cyan, len(icmp.Payload), reset)
 		fmt.Println("------------------------------------")
